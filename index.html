@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>빌드 받기로 열기</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fbf8ff; --fg:#1c1b1f; --dim:#49454f; --card:#ece6f0; --btn:#6750a4; --btntext:#fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141218; --fg:#e6e1e5; --dim:#cac4d0; --card:#2b2930; --btn:#d0bcff; --btntext:#381e72; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif; }
+  main { max-width:420px; margin:0 auto; padding:40px 20px; }
+  h1 { font-size:22px; margin:0 0 8px; }
+  p { color:var(--dim); line-height:1.55; margin:8px 0; }
+  .card { background:var(--card); border-radius:16px; padding:18px; margin-top:18px; }
+  a.btn { display:block; text-align:center; background:var(--btn); color:var(--btntext); text-decoration:none; font-weight:700;
+          padding:14px; border-radius:24px; margin-top:12px; }
+  a.quiet { display:block; text-align:center; color:var(--btn); margin-top:12px; }
+  .hide { display:none; }
+</style>
+</head>
+<body>
+<main>
+  <div id="opening">
+    <h1>빌드 받기로 여는 중…</h1>
+    <p id="what"></p>
+    <a class="btn" id="again" href="#">앱 열기</a>
+  </div>
+  <div id="missing" class="hide">
+    <h1>빌드 받기 앱이 없어요</h1>
+    <p>이 폰에 「빌드 받기」 가 깔려 있지 않거나, 옛 판이라 이 링크를 모릅니다.</p>
+    <div class="card">
+      <p><b>설치하는 법</b></p>
+      <p>1. 아래 드라이브 폴더에서 가장 최근 <code>builddrop_dev_….apk</code> 를 받아 엽니다.<br>
+         2. 「출처를 알 수 없는 앱」 허용을 묻으면 허용합니다.<br>
+         3. 설치한 뒤 이 링크를 다시 누르면 바로 그 게임으로 갑니다.</p>
+      <a class="btn" href="https://drive.google.com/drive/folders/137u5ZUAcedq4GhD-xSP31tKTt-JVUPoV">드라이브에서 빌드 받기 앱 받기</a>
+      <a class="quiet" id="retry" href="#">이미 깔았어요 — 다시 열기</a>
+    </div>
+  </div>
+</main>
+<script>
+  // 디스코드는 https 링크만 누르게 해 준다 — 이 페이지가 안드로이드 intent 로 「빌드 받기」 를 연다.
+  // 앱이 없으면 크롬이 browser_fallback_url(이 페이지 + missing=1)로 돌아온다.
+  var q = new URLSearchParams(location.search);
+  var target = (q.get("t") || "").slice(0, 60);
+  var self = location.origin + location.pathname;
+  var fallback = self + "?missing=1" + (target ? "&t=" + encodeURIComponent(target) : "");
+  var intent = "intent://open" + (target ? "?t=" + encodeURIComponent(target) : "") +
+    "#Intent;scheme=builddrop;package=com.janndk.builddrop;S.browser_fallback_url=" + encodeURIComponent(fallback) + ";end";
+  document.getElementById("what").textContent = target ? target + " 카드로 갑니다." : "";
+  document.getElementById("again").href = intent;
+  document.getElementById("retry").href = intent;
+  var android = /Android/i.test(navigator.userAgent);
+  if (q.get("missing") === "1" || !android) {
+    document.getElementById("opening").classList.add("hide");
+    document.getElementById("missing").classList.remove("hide");
+    if (!android) document.querySelector("#missing p").textContent = "빌드 받기는 안드로이드 앱입니다 — 폰에서 이 링크를 눌러 주세요.";
+  } else {
+    location.href = intent;
+    // 몇 초 안에 안 넘어가면(크롬이 아닌 브라우저 등) 설치 안내를 보인다
+    setTimeout(function () {
+      if (!document.hidden) {
+        document.getElementById("opening").classList.add("hide");
+        document.getElementById("missing").classList.remove("hide");
+      }
+    }, 2500);
+  }
+</script>
+</body>
+</html>
