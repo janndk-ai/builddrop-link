@@ -57,13 +57,18 @@
     if (!android) document.querySelector("#missing p").textContent = "빌드 받기는 안드로이드 앱입니다 — 폰에서 이 링크를 눌러 주세요.";
   } else {
     location.href = intent;
-    // 몇 초 안에 안 넘어가면(크롬이 아닌 브라우저 등) 설치 안내를 보인다
+    // 몇 초 안에 안 넘어가면 — 크롬은 사람이 누르지 않은 자동 이동으로는 앱을 안 열어 줄 때가 있다(디스코드 안 브라우저).
+    // 그러면 「앱 열기」 단추를 크게 두고(누르면 열린다) 설치 안내는 그 아래에. 「앱이 없다」 고 단정하지 않는다
     setTimeout(function () {
       if (!document.hidden) {
-        document.getElementById("opening").classList.add("hide");
+        document.querySelector("#opening h1").textContent = "눌러서 빌드 받기 열기";
+        document.getElementById("again").textContent = "빌드 받기 열기" + (target ? " — " + target : "");
+        document.querySelector("#missing h1").classList.add("hide");
+        document.querySelector("#missing > p").classList.add("hide");
+        document.getElementById("retry").classList.add("hide");
         document.getElementById("missing").classList.remove("hide");
       }
-    }, 2500);
+    }, 1500);
   }
 </script>
 </body>
